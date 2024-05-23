@@ -28,6 +28,6 @@
 ## Parte 5: Framework en Ionic
 
 ### Ejecución
-1. Instala Ionic CLI si no lo ha hecho ya (`npm install -g @ionic/cli`).
+1. Instale Ionic CLI si no lo ha hecho ya (`npm install -g @ionic/cli`).
 2. Ejecutar `ionic serve` para iniciar la aplicación móvil.
 

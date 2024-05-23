@@ -2,9 +2,9 @@
 session_start();
 
 $servername = "localhost";
-$username = "your_username";
-$password = "your_password";
-$dbname = "your_database";
+$username = "root";
+$password = ""; // tu contraseña de MySQL
+$dbname = "prueba2"; // el nombre de tu base de datos
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -12,25 +12,23 @@ if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST["email"];
-    $contrasena = $_POST["contrasena"];
+$email = $_POST['email'];
+$contraseña = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT nombre FROM usuarios WHERE email = ? AND contrasena = ?");
-    $stmt->bind_param("ss", $email, $contrasena);
-    $stmt->execute();
-    $stmt->bind_result($nombre);
-    $stmt->fetch();
+$sql = "SELECT nombre FROM usuarios WHERE email = ? AND contraseña = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ss", $email, $contraseña);
+$stmt->execute();
+$stmt->bind_result($nombre);
 
-    if ($nombre) {
-        $_SESSION["nombre"] = $nombre;
-        header("Location: dashboard.php");
-    } else {
-        echo "Email o contraseña incorrectos.";
-    }
-
-    $stmt->close();
+if ($stmt->fetch()) {
+    $_SESSION['nombre'] = $nombre;
+    header("Location: dashboard.php");
+} else {
+    echo "Email o contraseña incorrectos.";
 }
 
+$stmt->close();
 $conn->close();
 ?>
+

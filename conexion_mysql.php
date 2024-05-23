@@ -1,68 +1,78 @@
 <?php
+// Datos de la conexión a la base de datos
 $servername = "localhost";
 $username = "root";
-$password = "password";
-$dbname = "prueba2";
+$password = ""; // tu contraseña de MySQL
+$dbname = "prueba2"; // el nombre de tu base de datos
 
-// Crear conexión
+// Crear la conexión
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar conexión
+// Verificar la conexión
 if ($conn->connect_error) {
     die("Conexión fallida: " . $conn->connect_error);
 }
 
-// Crear tabla
+// Crear la tabla usuarios
 $sql = "CREATE TABLE IF NOT EXISTS usuarios (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL,
-    contrasena VARCHAR(255) NOT NULL
+    id INT(6) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(30) NOT NULL,
+    email VARCHAR(50) NOT NULL UNIQUE,
+    contraseña VARCHAR(50) NOT NULL
 )";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Tabla 'usuarios' creada exitosamente\n";
+    echo "Tabla usuarios creada exitosamente.<br>";
 } else {
-    echo "Error al crear la tabla: " . $conn->error;
+    echo "Error al crear la tabla: " . $conn->error . "<br>";
 }
 
 // Insertar registros
-$sql = "INSERT INTO usuarios (nombre, email, contrasena) VALUES 
-    ('Juan Perez', 'juan@example.com', 'pass123'),
-    ('Maria Lopez', 'maria@example.com', 'pass456'),
-    ('Carlos Gomez', 'carlos@example.com', 'pass789')";
+$sql = "INSERT INTO usuarios (nombre, email, contraseña) VALUES
+('Maria', 'maria@example.com', 'password'),
+('Sara', 'sara@example.com', 'pass123'),
+('Samuel', 'samuel@example.com', 'word789')";
 
 if ($conn->query($sql) === TRUE) {
-    echo "Registros insertados exitosamente\n";
+    echo "Registros insertados exitosamente.<br>";
 } else {
-    echo "Error al insertar registros: " . $conn->error;
+    echo "Error al insertar registros: " . $conn->error . "<br>";
 }
 
-// Función para obtener el nombre por email
-function getUserNameByEmail($email) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT nombre FROM usuarios WHERE email = ?");
+
+
+function obtenerNombrePorEmail($conn, $email) {
+    $sql = "SELECT nombre FROM usuarios WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        die("Error en la preparación de la consulta: " . $conn->error);
+    }
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->bind_result($nombre);
-    $stmt->fetch();
-    $stmt->close();
-    return $nombre;
-}
-
-// Función para actualizar la contraseña por nombre
-function updatePasswordByName($name, $newPassword) {
-    global $conn;
-    $stmt = $conn->prepare("UPDATE usuarios SET contrasena = ? WHERE nombre = ?");
-    $stmt->bind_param("ss", $newPassword, $name);
-    $stmt->execute();
+    $nombre_usuario = '';
+    $stmt->bind_result($nombre_usuario);
+    if ($stmt->fetch()) {
+        return $nombre_usuario;
+    } else {
+        return "No se encontró el usuario con el email proporcionado.";
+    }
     $stmt->close();
 }
 
-// Ejemplos de uso
-echo "Nombre del usuario con email 'juan@example.com': " . getUserNameByEmail('juan@example.com') . "\n";
-updatePasswordByName('Juan Perez', 'newpass123');
-echo "Contraseña actualizada para 'Juan Perez'\n";
+function actualizarContraseñaPorNombre($conn, $nombre, $nueva_contraseña) {
+    $sql = "UPDATE usuarios SET contraseña = ? WHERE nombre = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        die("Error en la preparación de la consulta: " . $conn->error);
+    }
+    $stmt->bind_param("ss", $nueva_contraseña, $nombre);
+    if ($stmt->execute()) {
+        return "Contraseña actualizada exitosamente.";
+    } else {
+        return "Error al actualizar la contraseña: " . $stmt->error;
+    }
+    $stmt->close();
+}
 
-$conn->close();
 ?>
+
